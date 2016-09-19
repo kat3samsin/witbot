@@ -20,13 +20,17 @@ function Witbot (witToken) {
       if (err) return console.error('Wit.ai Error: ', err)
 
       // only consider the 1st outcome
+      console.log('outcomes: ' + JSON.stringify(res.outcomes))
       if (res.outcomes && res.outcomes.length > 0) {
         var outcome = res.outcomes[0]
-        var intent = outcome.intent
-        args.push(outcome)
-        if (intents._intents[intent]) {
-          intents._intents[intent].forEach(function (registration) {
-            if (!matched && outcome.confidence >= registration.confidence) {
+        var intent = outcome.entities.intent ? outcome.entities.intent[0] : {value: '', confidence: 0};
+        
+        var searchQuery = outcome.entities.search_query ? outcome.entities.search_query[0] : {value: ''};
+        args.push(searchQuery.value) //outcome arg
+        
+        if (intents._intents[intent.value]) {
+          intents._intents[intent.value].forEach(function (registration) {
+            if (!matched && intent.confidence >= registration.confidence) {
               matched = true
               registration.fn.apply(undefined, args)
             }
